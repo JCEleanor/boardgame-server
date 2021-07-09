@@ -3,9 +3,9 @@ const router = express.Router();
 const { promisePool } = require('../database/db.connect')
 
 const isAvailible = (num) => {
-  // 如果同時段內訂單超過五筆就不開放訂位
-  //const chance = 5
-  const chance = Math.floor(Math.random() * 6)
+  // 如果同時段內訂單有1筆就不開放訂位
+  const chance = 1
+  //const chance = Math.floor(Math.random() * 6)
 
   return num < chance
 }
@@ -17,6 +17,10 @@ const convertBool = (store) => {
   }
 }
 
+router.get('/test', (req, res) => {
+  console.log(process.env.DB_NAME);
+  res.send('test')
+})
 
 // 根據使用者輸入日期 回應在資料庫中的startTime
 router.get('/', async (req, res, next) => {
@@ -92,5 +96,14 @@ router.get('/', async (req, res, next) => {
   // todo: 1. 另外寫個seed.js用node run過一次自動加資料到資料庫 OR 2. 在isAvailible動手腳
   res.json({store1,store2});
 });
+
+
+// write into database
+router.post('/', (req, res) => {
+  // lack: member id
+  const { bookingDate, startTime, numberOfPeople, storeName } = req.body
+  console.log(req.body);
+  res.send('success')
+})
 
 module.exports = router;
