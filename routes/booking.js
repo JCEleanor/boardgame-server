@@ -61,7 +61,6 @@ router.get('/', async (req, res, next) => {
   
   //todo: error handling to prevent { }
   const { formattedDate } = req.query
-  console.log('selectedDate: ',formattedDate);
   const today = new Date().toJSON().split('T')[0] //expected output: 2021-07-21
 
   // todo: prevent sql injection
@@ -122,22 +121,39 @@ router.post('/', async(req, res) => {
   const id = nanoid(8)
 
   const sql = `INSERT INTO reservations (reservationId, userId, date, startTime, storeId, numberOfPeople) VALUE('${id}',${userId},'${bookingDate}',${startTime},${storeId},${numberOfPeople})`
-  console.log(sql);
+
   const [rows, fields] = await promisePool.query(sql);
   if (rows.affectedRows > 0) {
-      res.redirect('/success')
+      res.send(id)
       return
   } else {
     res.send('oops, failed')
   }
 
-  //res.send(id)
 })
 
 
 router.get('/success', async (req, res) => {
-  // 從資料庫中拿出剛剛存入的訂單=> how? 1. 從上一頁拿到reservationId 
-  res.send('booking success page')
+  const { reservationId } = req.query
+  console.log('**************',req.query);
+  const sql = `SELECT reservations.startTime, reservations.date, store.storeName, reservations.numberOfPeople, 
+  reservations.reservationId, members.userName, members.userPhone
+  FROM reservations 
+  INNER JOIN members ON reservations.userId = members.userId
+  INNER JOIN store ON reservations.storeId = store.storeId
+  WHERE reservationId = '${reservationId}'`
+
+  const [rows, fields] = await promisePool.query(sql);
+  console.log(rows);
+
+  if (rows.length > 0) {
+    res.json(rows[0])
+    return
+
+  } else {
+    res.send('failed')
+  }
+
 })
 
 
