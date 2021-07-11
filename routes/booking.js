@@ -113,14 +113,15 @@ router.get('/', async (req, res, next) => {
 // write into database
 router.post('/', async(req, res) => {
   // lack: member id
-  const { bookingDate, startTime, numberOfPeople, storeName } = req.body
+  const { date, startTime, numberOfPeople, storeName } = req.body
   console.log(req.body);
   const storeId = storeName === "大安店" ? 1 : 2
   // userId 暫定 最後應該會從req.session裡拿
   const userId = 3 
   const id = nanoid(8)
 
-  const sql = `INSERT INTO reservations (reservationId, userId, date, startTime, storeId, numberOfPeople) VALUE('${id}',${userId},'${bookingDate}',${startTime},${storeId},${numberOfPeople})`
+  const sql = `INSERT INTO reservations (reservationId, userId, date, startTime, storeId, numberOfPeople) VALUE('${id}',${userId},'${date}',${startTime},${storeId},${numberOfPeople})`
+  console.log(sql);
 
   const [rows, fields] = await promisePool.query(sql);
   if (rows.affectedRows > 0) {
