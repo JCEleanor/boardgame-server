@@ -1,25 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { nanoid } = require('nanoid')
+const dayjs = require('dayjs')
+
+
 const { promisePool } = require('../database/db.connect')
 
 // todo: error handling, add a common output object {status: 200, message: 'success'}
 
 
-const isAvailible = (num) => {
-  // 如果同時段內訂單有1筆就不開放訂位
-  const minimunOrder = 1
-  //const minimunOrder = Math.floor(Math.random() * 6)
-
-  return num < minimunOrder
-}
-
-const convertBool = (store) => {
-  for (let i in store.availibility) {
-    // 訂單數大於1的會變成false, others remain true
-    store.availibility[i] = isAvailible(store.availibility[i])
-  }
-}
 
 
 // 根據使用者輸入日期 回應在資料庫中的startTime
@@ -61,6 +50,21 @@ router.get('/', async (req, res) => {
     },
   }
 
+  const isAvailible = (num) => {
+    // 如果同時段內訂單有1筆就不開放訂位
+    const minimunOrder = 1
+    //const minimunOrder = Math.floor(Math.random() * 6)
+  
+    return num < minimunOrder
+  }
+  
+  const convertBool = (store) => {
+    for (let i in store.availibility) {
+      // 訂單數大於1的會變成false, others remain true
+      store.availibility[i] = isAvailible(store.availibility[i])
+    }
+  }
+
   // default value set to 2021-07028
   const { formattedDate = '2021-07-28' } = req.query
   const today = new Date().toJSON().split('T')[0] //expected output: 2021-07-21
@@ -90,7 +94,6 @@ router.get('/', async (req, res) => {
 
   convertBool(store1)
   convertBool(store2)
-
 
   // 不能訂到過去的時間 假如現在17點 那今天17(包括)以前的時間都應該是flase
   if (formattedDate === today) {
@@ -137,44 +140,50 @@ router.post('/', async(req, res) => {
 
 router.delete('/:reservationId', async (req, res) => {
   // client side + server side validation: 訂單在一個小時前不能取消
-  
+  // 但因為沒有先預先收錢 其實這蠻沒意義的
+  const output = {status: 405, message: 'failed to delete booking record'}
   const { reservationId } = req.params
+
   const getRecord = "SELECT * FROM reservations WHERE reservationId = ?"
   const [rows, fields] = await promisePool.execute(getRecord, [reservationId]);
-  const {date, startTime} = rows[0]
-  console.log(date, startTime);
-  // 2021-07-08T16:00:00.000Z 21
+  const {date, startTime} = rows[0] 
+  
+  // do some checking...
 
+  if (true) {
+    const sql = "DELETE FROM reservations WHERE reservationId = ?"
+    const [rows, fields] = await promisePool.execute(sql, [reservationId]);
 
+    if (rows.affectedRows > 0) {
+      output.status = 200
+      output.message = 'successfully deleted booking record'
+    }
+  }
+  
+  res.status(output.status).json(output.message)
+  
 
-  // "DELETE FROM reservations WHERE reservationId = ?"
-  if (rows.affectedRows > 0) {
-    res.send('success')
-    return
-  } else {
-    res.send('oops, failed')
-}
 })
 
 
 router.get('/success/:reservationId', async (req, res) => {
+  const output = {status: 404, message: 'failed to load information'}
+
   const { reservationId } = req.params
   const sql = `SELECT reservations.startTime, reservations.date, store.storeName, reservations.numberOfPeople, 
   reservations.reservationId, members.userName, members.userPhone
   FROM reservations 
   INNER JOIN members ON reservations.userId = members.userId
   INNER JOIN store ON reservations.storeId = store.storeId
-  WHERE reservationId = '${reservationId}'`
+  WHERE reservationId = ?`
 
-  const [rows, fields] = await promisePool.query(sql);
+  const [rows, fields] = await promisePool.execute(sql, [reservationId]);
 
   if (rows.length > 0) {
-    res.json(rows[0])
-    return
-
-  } else {
-    res.send('failed')
+    output.status = 200
+    output.message = rows[0]
   }
+  res.status(output.status).json(output.message)
 
 })
 
