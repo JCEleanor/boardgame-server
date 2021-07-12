@@ -3,6 +3,8 @@ const router = express.Router();
 const { nanoid } = require('nanoid')
 const { promisePool } = require('../database/db.connect')
 
+// todo: error handling, add a common output object {status: 200, message: 'success'}
+
 
 const isAvailible = (num) => {
   // 如果同時段內訂單有1筆就不開放訂位
@@ -21,7 +23,7 @@ const convertBool = (store) => {
 
 
 // 根據使用者輸入日期 回應在資料庫中的startTime
-router.get('/', async (req, res, next) => {
+router.get('/', async (req, res) => {
  const store1 = {
     storeId: '1',
     storeImg: 'https://fakeimg.pl/300/',
@@ -58,18 +60,17 @@ router.get('/', async (req, res, next) => {
       21: 0,
     },
   }
-  
-  //todo: error handling to prevent { }
-  const { formattedDate } = req.query
+
+  // default value set to 2021-07028
+  const { formattedDate = '2021-07-28' } = req.query
   const today = new Date().toJSON().split('T')[0] //expected output: 2021-07-21
 
-  // todo: prevent sql injection
   const sql = `SELECT reservations.storeId, reservations.startTime, store.storeName 
               FROM reservations 
               INNER JOIN store ON store.storeId = reservations.storeId
-              WHERE date="${formattedDate}"`
+              WHERE date=?`
   
-  const [rows, fields] = await promisePool.query(sql);
+  const [rows, fields] = await promisePool.execute(sql, [formattedDate]);
 
   rows.forEach((order) => {
     switch (order.storeName) {
@@ -112,18 +113,17 @@ router.get('/', async (req, res, next) => {
 
 // write into database
 router.post('/', async(req, res) => {
-  // lack: member id
   const { date, startTime, numberOfPeople, storeName } = req.body
-  console.log(req.body);
   const storeId = storeName === "大安店" ? 1 : 2
   // userId 暫定 最後應該會從req.session裡拿
   const userId = 3 
   const id = nanoid(8)
 
-  const sql = `INSERT INTO reservations (reservationId, userId, date, startTime, storeId, numberOfPeople) VALUE('${id}',${userId},'${date}',${startTime},${storeId},${numberOfPeople})`
+  const sql = `INSERT INTO reservations (reservationId, userId, date, startTime, storeId, numberOfPeople) VALUE(?, ?, ?, ?, ?, ?)`
+
   console.log(sql);
 
-  const [rows, fields] = await promisePool.query(sql);
+  const [rows, fields] = await promisePool.execute(sql, [id, userId, date, startTime, storeId, numberOfPeople]);
   if (rows.affectedRows > 0) {
       res.send(id)
       return
@@ -134,9 +134,31 @@ router.post('/', async(req, res) => {
 })
 
 
-router.get('/success', async (req, res) => {
-  const { reservationId } = req.query
-  console.log('**************',req.query);
+
+router.delete('/:reservationId', async (req, res) => {
+  // client side + server side validation: 訂單在一個小時前不能取消
+  
+  const { reservationId } = req.params
+  const getRecord = "SELECT * FROM reservations WHERE reservationId = ?"
+  const [rows, fields] = await promisePool.execute(getRecord, [reservationId]);
+  const {date, startTime} = rows[0]
+  console.log(date, startTime);
+  // 2021-07-08T16:00:00.000Z 21
+
+
+
+  // "DELETE FROM reservations WHERE reservationId = ?"
+  if (rows.affectedRows > 0) {
+    res.send('success')
+    return
+  } else {
+    res.send('oops, failed')
+}
+})
+
+
+router.get('/success/:reservationId', async (req, res) => {
+  const { reservationId } = req.params
   const sql = `SELECT reservations.startTime, reservations.date, store.storeName, reservations.numberOfPeople, 
   reservations.reservationId, members.userName, members.userPhone
   FROM reservations 
@@ -145,7 +167,6 @@ router.get('/success', async (req, res) => {
   WHERE reservationId = '${reservationId}'`
 
   const [rows, fields] = await promisePool.query(sql);
-  console.log(rows);
 
   if (rows.length > 0) {
     res.json(rows[0])
@@ -162,6 +183,7 @@ router.get('/success', async (req, res) => {
 router.get('/i-wanna-see-all-booking-records', async(req, res) => {
   const sql = "SELECT * FROM reservations ORDER BY date"
   const [rows, fields] = await promisePool.query(sql);
+  console.log(rows.length);
   res.json(rows)
 })
 

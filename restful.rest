@@ -1,0 +1,30 @@
+GET http://localhost:8080/booking?formattedDate=2021-08-01 
+content-type: application/json
+
+#####
+
+POST http://localhost:8080/booking 
+content-type: application/json
+{
+    "date": "2021-07-31",
+    "startTime": "18",
+    "numberOfPeople": 4,
+    "storeName": "大安店"
+}
+// expected output: reservationId (str)
+
+######
+
+GET http://localhost:8080/booking/success/1LcavMoN
+content-type: application/json
+
+#####
+
+DELETE http://localhost:8080/booking/umeys7N8
+content-type: application/json
+
+
+####
+GET http://localhost:8080/booking/i-wanna-see-all-booking-records
+content-type: application/json
+
