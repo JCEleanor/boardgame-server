@@ -6,9 +6,7 @@ const dayjs = require('dayjs')
 
 const { promisePool } = require('../database/db.connect')
 
-// todo: error handling, add a common output object {status: 200, message: 'success'}
-
-
+// todo: error handling
 
 
 // 根據使用者輸入日期 回應在資料庫中的startTime
@@ -66,8 +64,8 @@ router.get('/', async (req, res) => {
   }
 
   // default value set to 2021-07028
-  const { formattedDate = '2021-07-28' } = req.query
   const today = new Date().toJSON().split('T')[0] //expected output: 2021-07-21
+  const { formattedDate = today } = req.query
 
   const sql = `SELECT reservations.storeId, reservations.startTime, store.storeName 
               FROM reservations 
@@ -109,7 +107,7 @@ router.get('/', async (req, res) => {
       store2.availibility[i] = false
     }
   }  
-
+  
   res.json({store1,store2});
 });
 
@@ -121,21 +119,17 @@ router.post('/', async(req, res) => {
   // userId 暫定 最後應該會從req.session裡拿
   const userId = 3 
   const id = nanoid(8)
-
   const sql = `INSERT INTO reservations (reservationId, userId, date, startTime, storeId, numberOfPeople) VALUE(?, ?, ?, ?, ?, ?)`
 
-  console.log(sql);
-
-  const [rows, fields] = await promisePool.execute(sql, [id, userId, date, startTime, storeId, numberOfPeople]);
+  const [rows, fields] = await promisePool.execute(sql, [id, userId, date, startTime, storeId, numberOfPeople])
   if (rows.affectedRows > 0) {
-      res.send(id)
-      return
+    res.send(id)
+    return
   } else {
     res.send('oops, failed')
   }
 
 })
-
 
 
 router.delete('/:reservationId', async (req, res) => {
@@ -168,7 +162,6 @@ router.delete('/:reservationId', async (req, res) => {
 
 router.get('/success/:reservationId', async (req, res) => {
   const output = {status: 404, message: 'failed to load information'}
-
   const { reservationId } = req.params
   const sql = `SELECT reservations.startTime, reservations.date, store.storeName, reservations.numberOfPeople, 
   reservations.reservationId, members.userName, members.userPhone
@@ -178,11 +171,12 @@ router.get('/success/:reservationId', async (req, res) => {
   WHERE reservationId = ?`
 
   const [rows, fields] = await promisePool.execute(sql, [reservationId]);
-
   if (rows.length > 0) {
+    rows[0].date = rows[0].date.toJSON().split('T')[0]
     output.status = 200
     output.message = rows[0]
   }
+  console.log(output);
   res.status(output.status).json(output.message)
 
 })
