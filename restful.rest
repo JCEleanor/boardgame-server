@@ -28,3 +28,14 @@ content-type: application/json
 GET http://localhost:8080/booking/i-wanna-see-all-booking-records
 content-type: application/json
 
+
+####
+GET http://localhost:8080/users/booking
+
+
+####
+GET http://localhost:8080/users/booking/:0yrLAhKi
+
+
+####
+DELETE http://localhost:8080/users/booking/:0yrLAhKi

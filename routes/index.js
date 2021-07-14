@@ -1,5 +1,5 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 require('dotenv').config()
 
 // 但是這些會要接到資料庫嗎？

@@ -1,19 +1,19 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 const cors = require('cors');
 
 
-var indexRouter = require('./routes/index');
-var bookingRouter = require('./routes/booking');
-var userRouter = require('./routes/user');
-var cartRouter = require('./routes/cart');
-var messageRouter = require('./routes/message');
-var itemRouter = require('./routes/items');
+const indexRouter = require('./routes/index');
+const bookingRouter = require('./routes/booking');
+const userRouter = require('./routes/user');
+// const cartRouter = require('./routes/cart');
+// const messageRouter = require('./routes/message');
+// const itemRouter = require('./routes/items');
 
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -29,9 +29,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/booking', bookingRouter);
 app.use('/users', userRouter);
-app.use('/cart', cartRouter);
-app.use('/message', messageRouter);
-app.use('/items', itemRouter);
+// app.use('/cart', cartRouter);
+// app.use('/message', messageRouter);
+// app.use('/items', itemRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
