@@ -60,3 +60,7 @@ content-type: application/json
     "username": "jceleanor",
     "password": "123"
 }
+
+###
+GET http://localhost:8080/secret
+content-type: application/json

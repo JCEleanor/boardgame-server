@@ -4,6 +4,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
+const session = require('express-session')
 
 
 const indexRouter = require('./routes/index');
@@ -25,6 +26,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// for authentication
+app.use(session({ secret: 'notagoodsecret', resave: true, saveUninitialized: true }))
 
 app.use('/', indexRouter);
 app.use('/booking', bookingRouter);
