@@ -1,10 +1,11 @@
 GET http://localhost:8080/booking?formattedDate=2021-08-01 
 content-type: application/json
 
-#####
+###
 
 POST http://localhost:8080/booking 
 content-type: application/json
+
 {
     "date": "2021-07-31",
     "startTime": "18",
@@ -13,29 +14,49 @@ content-type: application/json
 }
 // expected output: reservationId (str)
 
-######
+###
 
 GET http://localhost:8080/booking/success/0yrLAhKi
 content-type: application/json
 
-#####
+###
 
 DELETE http://localhost:8080/booking/umeys7N8
-content-type: application/json
 
 
-####
+###
 GET http://localhost:8080/booking/i-wanna-see-all-booking-records
-content-type: application/json
 
 
-####
+###
 GET http://localhost:8080/users/booking
 
 
-####
+###
 GET http://localhost:8080/users/booking/:0yrLAhKi
 
 
-####
+###
 DELETE http://localhost:8080/users/booking/:0yrLAhKi
+
+
+
+
+###
+POST http://localhost:8080/regiter
+content-type: application/json
+
+{
+    "username": "jceleanor",
+    "password": "123"
+}
+
+
+###
+POST http://localhost:8080/login
+content-type: application/json
+
+{
+    "username": "jceleanor",
+    "password": "123"
+}

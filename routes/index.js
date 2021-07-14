@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcrypt')
 require('dotenv').config()
 
 // 但是這些會要接到資料庫嗎？
@@ -16,24 +17,20 @@ router.get('/about', function (req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-/* GET login page. */
-router.get('/login', function (req, res, next) {
-  
-});
 
 /* POST login page. */
-router.post('/login', function (req, res, next) {
-  
+router.post('/login', async(req, res, next)=> {
+  res.send(req.body)
 });
 
-/* GET register page. */
-router.get('/register', function (req, res, next) {
-  
-});
 
 /* POST register page. */
-router.post('/register', function (req, res, next) {
-  
+router.post('/register', async (req, res, next)=> {
+  const {password, username} = req.body
+  const hashedPwd = await bcrypt.hash(password, 12)
+  //const sql = "INSERT INTO..."
+  res.send(hashedPwd)
+  // res.send('success')
 });
 
 
