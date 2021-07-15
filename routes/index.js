@@ -42,11 +42,12 @@ router.post('/login', async(req, res, next)=> {
 
 
 /* POST register page. */
-router.post('/register', async (req, res, next)=> {
-  const {password, username} = req.body
-  const hashedPwd = await bcrypt.hash(password, 12)
+router.post('/register-google', async (req, res, next) => {
+  console.log(req.body);
+  // const {password, username} = req.body
+  // const hashedPwd = await bcrypt.hash(password, 12)
   //const sql = "INSERT INTO..."
-  res.send(hashedPwd)
+  // res.send(hashedPwd)
 
   // save the user into session, so the user don't have to login after register
   // req.session.userId = rows[0].userId
